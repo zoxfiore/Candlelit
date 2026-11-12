@@ -1,0 +1,30 @@
+{
+  "name": "candlelit",
+  "version": "1.0.0",
+  "description": "A short interactive story told in 3D: scroll the page and the camera moves through a dark, candle-lit scene while the story unfolds in chapters. Built from scratch with three.js as a school WebGL project.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zoxfiore/Candlelit.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zoxfiore/Candlelit/issues"
+  },
+  "homepage": "https://github.com/zoxfiore/Candlelit#readme",
+  "dependencies": {
+    "lil-gui": "^0.21.0",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.8"
+  },
+  "private": true,
+  "type": "module"
+}
