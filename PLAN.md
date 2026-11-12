@@ -8,6 +8,9 @@ the camera moves, lights change, objects appear, effects trigger.
 The **engine** (everything in `src/`) is the same for every story.
 A **story** is just data + a few story-specific objects, in its own folder: `stories/<name>/`.
 
+References: `references/` holds two earlier story videos made with WebGL (Einstein's brain, Mary Shelley).
+We rebuild that idea live in the browser, scroll-driven, with the same stack. See `references/CONTEXT.md`.
+
 First story (not final): **Shakespeare's grave** — a dark church, the curse carved on the gravestone,
 a radar scan that reveals the skull is missing.
 
@@ -122,4 +125,4 @@ Dates are filled in once we fix the deadline.
 ## 10. Open questions
 - Deadline: **TBD**
 - Teammate name: **TBD**
-- Final story: Shakespeare's grave or something else?
+- Final story: Shakespeare's grave, Einstein's brain, Mary Shelley, or something else?
