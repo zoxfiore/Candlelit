@@ -3,9 +3,51 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Candlelit</title>
+    <title>Candlelit — Einstein's Brain</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
+    <!-- the WebGL canvas is fixed behind everything (added by src/core/renderer.js) -->
+    <div id="app"></div>
+
+    <!-- this empty, very tall div is what we scroll. Its height is set from the number of chapters -->
+    <div id="scroll-space"></div>
+
+    <!-- overlays drawn on top of the canvas (HTML + CSS, not WebGL) -->
+    <div id="vignette"></div>
+    <div id="fade"></div>
+
+    <div id="title-card">
+      <div class="tc-number"></div>
+      <div class="tc-title"></div>
+      <div class="tc-place"></div>
+    </div>
+
+    <div id="subtitle"></div>
+
+    <div id="tooltip">
+      <div class="tt-name"></div>
+      <div class="tt-role"></div>
+      <div class="tt-text"></div>
+    </div>
+
+    <div id="progress"><div id="progress-bar"></div></div>
+    <button id="mute" title="Sound on / off">🔊</button>
+    <div id="hint">Scroll to continue · hover over people &amp; objects</div>
+
+    <div id="start-screen">
+      <div class="ss-small">A scroll story in WebGL</div>
+      <h1>The Stolen Brain<br /><span>of Albert Einstein</span></h1>
+      <p>Princeton, 1955. The greatest mind of the century dies.<br />His brain does not go with him.</p>
+      <button id="start-button">Begin the story</button>
+      <div class="ss-tip">Best with sound · scroll to move through time</div>
+    </div>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
