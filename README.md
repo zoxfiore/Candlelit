@@ -22,7 +22,7 @@ Then open http://localhost:5173
 ## What you can do
 - **Scroll**: move through the story (12 chapters, about 35 screens)
 - **Hover** people and objects: a card explains who or what they are
-- **🔊**: voice-over on / off (one audio file per chapter, see `public/audio/README.md`)
+- **🔊**: voice-over on / off (one narrated track per chapter, with music and sound effects)
 
 ## WebGL features
 | Feature | Where |
@@ -41,7 +41,7 @@ Then open http://localhost:5173
 ```
 index.html                  page: canvas + HTML overlays (titles, subtitles, tooltip)
 public/assets/              AI-generated assets: models/ (.glb), textures/, characters/, props/ (see CREDITS.md)
-public/audio/               voice-over (chapter-01.mp3 ...)
+public/audio/               voice-over + music + sound effects, one track per chapter (AI-generated, see CREDITS.md)
 src/
   main.js                   connects everything + render loop
   core/                     renderer, camera, resize
