@@ -1,0 +1,235 @@
+/* Everything drawn on top of the 3D canvas. */
+
+/* dark edges, like an old film lens */
+#vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+/* black layer used to fade between chapters (opacity set in JS) */
+#fade {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* ---------- chapter title (top left) ---------- */
+#title-card {
+  position: fixed;
+  top: 36px;
+  left: 44px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s;
+  text-shadow: 0 2px 10px #000;
+}
+#title-card.visible {
+  opacity: 1;
+}
+.tc-number {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.tc-title {
+  font-family: var(--serif);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.tc-place {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--ink-dim);
+}
+
+/* ---------- subtitles (bottom) ---------- */
+#subtitle {
+  position: fixed;
+  left: 50%;
+  bottom: 70px;
+  transform: translateX(-50%);
+  width: min(820px, calc(100vw - 32px));
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 30px;
+  line-height: 1.3;
+  pointer-events: none;
+  text-shadow: 0 2px 8px #000, 0 0 30px #000;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+#subtitle.visible {
+  opacity: 1;
+}
+#subtitle em {
+  color: var(--gold);
+  font-style: normal;
+}
+
+/* ---------- hover tooltip ---------- */
+#tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  max-width: 300px;
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.15s, transform 0.15s;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+#tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.tt-name {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.tt-role {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 2px 0 8px;
+}
+.tt-text {
+  font-size: 14px;
+  line-height: 1.5;
+}
+body.hovering {
+  cursor: help;
+}
+
+/* ---------- small UI ---------- */
+#progress {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+}
+#progress-bar {
+  height: 100%;
+  width: 0;
+  background: var(--gold);
+}
+#mute {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 18px;
+  cursor: pointer;
+}
+#hint {
+  position: fixed;
+  right: 30px;
+  bottom: 22px;
+  font-size: 12px;
+  color: var(--ink-dim);
+  letter-spacing: 0.05em;
+  transition: opacity 0.6s;
+}
+
+/* ---------- start screen ---------- */
+#start-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 16px;
+  background: radial-gradient(ellipse at center, rgba(40, 22, 12, 0.85), rgba(0, 0, 0, 0.97));
+  transition: opacity 1s;
+}
+#start-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.ss-small {
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--gold);
+}
+#start-screen h1 {
+  font-family: var(--serif);
+  font-size: clamp(40px, 7vw, 76px);
+  line-height: 1;
+  margin: 18px 0;
+}
+#start-screen h1 span {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ink-dim);
+}
+#start-screen p {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--ink-dim);
+  margin: 0 0 30px;
+}
+#start-button {
+  font-family: var(--sans);
+  font-size: 16px;
+  padding: 14px 34px;
+  border-radius: 40px;
+  border: 1px solid var(--gold);
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+#start-button:hover {
+  background: var(--gold);
+  color: #1a100a;
+}
+.ss-tip {
+  margin-top: 18px;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+@media (max-width: 700px) {
+  #title-card {
+    top: 20px;
+    left: 16px;
+  }
+  .tc-title {
+    font-size: 28px;
+  }
+  #subtitle {
+    font-size: 22px;
+    bottom: 50px;
+  }
+  #hint {
+    display: none;
+  }
+}
+
+#start-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
