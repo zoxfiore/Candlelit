@@ -76,8 +76,7 @@ The mouse adds a small offset (parallax): the scene feels alive even without scr
 - `?debug` opens the light sliders
 
 ## TODO (your part)
-- [ ] Put the voice-over files in `public/audio/` and paste the final script into `lines` in `story.js`
-- [ ] Adjust `screens` of each chapter to the length of its audio (~1 screen per 10–12 s)
+- [ ] Scroll through the whole story with sound: check that `screens` (~1 screen per 10 s of audio) feels right
 - [ ] Re-frame the camera shots (`from` / `to`) once the voice-over timing is fixed
 - [ ] Add an end screen with "The End" + our names after the last chapter
 - [ ] When scrolling fast, each chapter's audio starts and stops: maybe wait ~0.5 s before playing

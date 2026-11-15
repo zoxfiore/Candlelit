@@ -3,14 +3,10 @@
 12 chapters, from 1955 to today. The subtitles in `stories/einstein/story.js` are a first draft:
 replace them with the lines of the final voice-over script.
 
-## Voice-over: how to plug it in
-1. Split the final script into **12 parts**, one per chapter (the table below).
-2. Record or generate one audio file per part: `chapter-01.mp3` ... `chapter-12.mp3`.
-3. Put them in `public/audio/`. Done: each file starts when the user scrolls into its chapter.
-4. Copy the sentences of each part into the `lines` of that chapter in `story.js`
-   (one sentence per line; `*word*` = shown in gold).
-5. If a chapter's audio is long, give it more scroll: increase its `screens` (3 = about 3 screen heights).
-   Rule of thumb: ~1 screen per 10–12 seconds of voice.
+## Voice-over
+One audio track per chapter in `public/audio/` (`chapter-01.mp3` ... `chapter-12.mp3`): narration, music and
+sound effects mixed together, about 5 minutes in total. The subtitles in `stories/einstein/story.js` are the same
+text, sentence by sentence. If a chapter's audio changes, adjust its `screens` (~1 screen per 10 s of audio).
 
 ## Chapters
 | # | Title | Place & date | What happens | Set (file) |
