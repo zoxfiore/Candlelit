@@ -7,6 +7,9 @@
 //   camera         start shot and end shot: { pos: [x, y, z], look: [x, y, z] }
 //   audio          voice-over file for this chapter (public/audio/)
 //   lines          subtitles, shown one after the other while scrolling. *word* = gold
+//   camera.shots   extra "beat" shots between from and to: { at: 0..1, pos, look, fov }
+//   gates          interactions: the scroll stops at `at` until the viewer does it
+//                  { id, at, kind: move|drag|hold|click|keys, prompt }
 //
 // The lines are the voice-over script, sentence by sentence (same text as the audio files).
 
@@ -31,7 +34,16 @@ export default {
       place: "Princeton, New Jersey — April 1955",
       set: buildStudy,
       screens: 4,
-      camera: { from: { pos: [0, 1.8, 4.6], look: [-0.2, 1.3, -1] }, to: { pos: [0.5, 1.55, 1.3], look: [0.35, 1.45, -1.1] } },
+      camera: {
+        from: { pos: [0, 1.8, 4.6], look: [-0.2, 1.3, -1] },
+        shots: [
+          { at: 0.3, pos: [0.9, 1.6, 1.4], look: [0.4, 1.45, -1.1], fov: 38 }, // meet Einstein
+          { at: 0.55, pos: [-0.3, 1.7, 1.6], look: [-1.1, 0.8, -0.8], fov: 50 }, // the desk, where the note is
+          { at: 0.72, pos: [-0.6, 1.25, 0.2], look: [-1.05, 0.8, -0.75], fov: 40 }, // read the note
+        ],
+        to: { pos: [0.5, 1.55, 1.3], look: [0.35, 1.45, -1.1] },
+      },
+      gates: [{ id: "wish", at: 0.56, kind: "move", prompt: "You hold the candle. Move it over Einstein's desk to find his last wish." }],
       audio: "audio/chapter-01.mp3",
       lines: [
         "Princeton, New Jersey. April 1955.",
@@ -48,7 +60,15 @@ export default {
       place: "Princeton Hospital — April 18, 1955",
       set: buildAutopsy,
       screens: 2.5,
-      camera: { from: { pos: [-0.6, 2.3, 3.6], look: [-0.2, 0.9, -0.7] }, to: { pos: [0.9, 1.5, 0.9], look: [1.25, 1.25, -1.0] } },
+      camera: {
+        from: { pos: [-0.6, 2.3, 3.6], look: [-0.2, 0.9, -0.7] },
+        shots: [
+          { at: 0.25, pos: [1.6, 1.6, 1.2], look: [1.3, 1.35, -1.0], fov: 36 }, // Harvey
+          { at: 0.5, pos: [0.4, 2.6, 2.0], look: [-0.3, 1.2, -0.7], fov: 50 }, // the lamp over the table
+        ],
+        to: { pos: [0.9, 1.5, 0.9], look: [1.25, 1.25, -1.0] },
+      },
+      gates: [{ id: "lamp", at: 0.5, kind: "drag", prompt: "Hold and drag left / right to swing the surgical lamp." }],
       audio: "audio/chapter-02.mp3",
       lines: [
         "A few hours later, the pathologist on duty begins the autopsy.",
@@ -94,7 +114,12 @@ export default {
       place: "Philadelphia — 1955",
       set: buildLab,
       screens: 3,
-      camera: { from: { pos: [0, 2.7, 1.6], look: [-0.3, 0.8, -0.8] }, to: { pos: [-0.25, 1.45, 0.35], look: [-0.3, 0.8, -0.85] } },
+      camera: {
+        from: { pos: [0, 2.7, 1.6], look: [-0.3, 0.8, -0.8] },
+        shots: [{ at: 0.45, pos: [0.15, 1.5, 0.55], look: [-0.3, 0.95, -0.8], fov: 40 }], // the whole brain on the bench
+        to: { pos: [-0.25, 1.45, 0.35], look: [-0.3, 0.8, -0.85] },
+      },
+      gates: [{ id: "cut", at: 0.48, kind: "hold", prompt: "Hold the mouse button to cut the brain into 240 blocks." }],
       audio: "audio/chapter-05.mp3",
       lines: [
         "Harvey takes the brain to a laboratory at the University of Pennsylvania, in Philadelphia.",
@@ -126,7 +151,15 @@ export default {
       place: "Wichita, Kansas — 1978",
       set: buildWichita,
       screens: 3,
-      camera: { from: { pos: [-0.3, 1.8, 4], look: [0, 1.1, -1.2] }, to: { pos: [1.15, 0.65, 0.2], look: [1.6, 0.25, -1.4] } },
+      camera: {
+        from: { pos: [-0.3, 1.8, 4], look: [0, 1.1, -1.2] },
+        shots: [
+          { at: 0.35, pos: [-0.6, 1.6, 1.2], look: [0.7, 1.3, -1.2], fov: 38 }, // over Levy's shoulder, on Harvey
+          { at: 0.66, pos: [0.6, 1.3, 1.0], look: [1.6, 0.4, -1.4], fov: 45 }, // the corner of the room
+        ],
+        to: { pos: [1.15, 0.65, 0.2], look: [1.6, 0.25, -1.4] },
+      },
+      gates: [{ id: "box", at: 0.67, kind: "click", prompt: "Something is hidden under the beer cooler. Click it." }],
       audio: "audio/chapter-07.mp3",
       lines: [
         "For twenty years, the world forgets about Einstein's brain.",
@@ -158,7 +191,12 @@ export default {
       place: "Across America — 1997",
       set: buildRoad,
       screens: 2.5,
-      camera: { from: { pos: [3.5, 1.3, 9], look: [0, 0.7, 0] }, to: { pos: [3.2, 1.4, 1.8], look: [0, 0.85, -0.2] } },
+      camera: {
+        from: { pos: [3.5, 1.3, 9], look: [0, 0.7, 0] },
+        shots: [{ at: 0.45, pos: [0, 2.4, -6.5], look: [0, 0.7, 8], fov: 55 }], // behind the car: you drive
+        to: { pos: [3.2, 1.4, 1.8], look: [0, 0.85, -0.2] },
+      },
+      gates: [{ id: "drive", at: 0.46, kind: "keys", prompt: "Take the wheel: ← → (or hold the mouse) to steer the Buick." }],
       audio: "audio/chapter-09.mp3",
       lines: [
         "In 1997, Thomas Harvey is *84 years old*.",

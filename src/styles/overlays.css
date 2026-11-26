@@ -233,3 +233,385 @@ body.hovering {
   opacity: 0.6;
   cursor: wait;
 }
+
+/* the vignette is now drawn by the film shader (src/core/post.js) */
+#vignette {
+  display: none;
+}
+
+/* subtitles: a soft dark band behind the text so it is always readable */
+#subtitle {
+  padding: 14px 28px;
+  border-radius: 14px;
+  background: radial-gradient(ellipse at center, rgba(6, 4, 3, 0.62) 0%, rgba(6, 4, 3, 0.35) 60%, rgba(6, 4, 3, 0) 100%);
+}
+
+/* ---------- interaction prompt ---------- */
+#prompt {
+  position: fixed;
+  left: 50%;
+  bottom: 190px;
+  transform: translate(-50%, 12px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 22px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 40px rgba(232, 184, 96, 0.18);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s, transform 0.4s;
+}
+#prompt.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  animation: prompt-glow 2.2s ease-in-out infinite;
+}
+#prompt.solved {
+  opacity: 0;
+  transform: translate(-50%, -14px) scale(1.04);
+}
+.pr-icon {
+  font-size: 20px;
+  color: var(--gold);
+}
+.pr-bar {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 7px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(232, 184, 96, 0.15);
+  overflow: hidden;
+}
+.pr-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--gold);
+  transition: width 0.15s;
+}
+@keyframes prompt-glow {
+  50% {
+    box-shadow: 0 0 60px rgba(232, 184, 96, 0.35);
+  }
+}
+/* while the story waits, the "scroll" cursor becomes a "do something" cursor */
+body.waiting {
+  cursor: crosshair;
+}
+
+/* ---------- chapter rail (right side) ---------- */
+#rail {
+  position: fixed;
+  right: 26px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 5;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s;
+}
+body.started #rail {
+  opacity: 1;
+  pointer-events: auto;
+}
+.rail-dot {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+.rail-dot.past {
+  background: rgba(232, 184, 96, 0.35);
+}
+.rail-dot.current {
+  background: var(--gold);
+  transform: scale(1.4);
+  box-shadow: 0 0 12px var(--gold);
+}
+.rail-label {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translate(6px, -50%);
+  white-space: nowrap;
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--ink);
+  text-shadow: 0 1px 6px #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.rail-label b {
+  color: var(--gold);
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  margin-right: 4px;
+}
+.rail-dot:hover .rail-label,
+.rail-dot.current .rail-label {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+.rail-dot.current .rail-label {
+  opacity: 0.55;
+}
+@media (max-width: 700px) {
+  #rail {
+    display: none;
+  }
+}
+
+/* =========================================================
+   Evidence & case file
+   A 1950s case file: aged paper, typewriter labels, a red exhibit stamp.
+   ========================================================= */
+:root {
+  --paper: #e8dbbd;
+  --paper-dark: #cdb98f;
+  --paper-ink: #2a1d12;
+  --stamp: #9a2b1f;
+  --typewriter: "Special Elite", "Courier New", monospace;
+  --hand: "Homemade Apple", cursive;
+}
+
+/* the magnifying-glass cursor over clickable evidence */
+body.can-inspect,
+body.can-inspect * {
+  cursor: zoom-in !important;
+}
+
+/* ---------- inspect view ---------- */
+#inspect {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 360px);
+  align-items: center;
+  justify-content: center;
+  gap: 56px;
+  padding: 40px;
+  background: radial-gradient(ellipse at 40% 50%, rgba(40, 24, 12, 0.55), rgba(5, 3, 2, 0.88) 70%);
+  backdrop-filter: blur(7px) saturate(0.8);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+  perspective: 1200px;
+  cursor: zoom-out;
+}
+#inspect.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.in-sheet {
+  --rx: 0deg;
+  --ry: 0deg;
+  position: relative;
+  width: min(440px, 42vw);
+  min-height: min(560px, 70vh);
+  padding: 48px 44px 40px;
+  color: var(--paper-ink);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(140, 95, 45, 0.18), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(120, 80, 40, 0.22), transparent 45%),
+    radial-gradient(circle at 60% 35%, rgba(255, 250, 235, 0.35), transparent 55%),
+    linear-gradient(180deg, var(--paper), var(--paper-dark));
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(80, 50, 20, 0.25),
+    inset 0 0 60px rgba(110, 70, 30, 0.25);
+  transform: translateY(40px) rotate(-3deg) rotateX(var(--rx)) rotateY(var(--ry)) scale(0.92);
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+#inspect.open .in-sheet {
+  transform: translateY(0) rotate(-1.5deg) rotateX(var(--rx)) rotateY(var(--ry)) scale(1);
+}
+.in-sheet::after {
+  /* a light fold across the middle */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(90, 60, 30, 0.25), transparent);
+}
+
+.in-text {
+  font-size: 19px;
+  line-height: 1.75;
+  white-space: normal;
+}
+.kind-typed .in-text {
+  font-family: var(--typewriter);
+  font-size: 16px;
+  letter-spacing: 0.01em;
+}
+.kind-letter .in-text {
+  font-family: var(--hand);
+  font-size: 22px;
+  line-height: 2.1;
+  color: #1f2550;
+  padding-top: 20px;
+}
+.kind-photo .in-doc {
+  display: grid;
+  place-items: center;
+  min-height: 420px;
+}
+.kind-photo img {
+  max-width: 100%;
+  max-height: 52vh;
+  object-fit: contain;
+  filter: sepia(0.35) contrast(1.05) drop-shadow(0 10px 18px rgba(60, 35, 15, 0.45));
+}
+
+.in-stamp {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  padding: 4px 12px;
+  border: 3px double var(--stamp);
+  border-radius: 4px;
+  color: var(--stamp);
+  font-family: var(--typewriter);
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  transform: rotate(7deg) scale(1.6);
+  mix-blend-mode: multiply;
+  transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) 0.35s;
+}
+#inspect.open .in-stamp {
+  transform: rotate(7deg) scale(1);
+}
+
+.in-label {
+  max-width: 360px;
+  opacity: 0;
+  transform: translateX(16px);
+  transition: opacity 0.5s 0.2s, transform 0.5s 0.2s;
+}
+#inspect.open .in-label {
+  opacity: 1;
+  transform: none;
+}
+.in-date {
+  font-family: var(--typewriter);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.in-title {
+  margin: 6px 0 14px;
+  font-family: var(--serif);
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.05;
+}
+.in-caption {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 21px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.in-note {
+  margin: 18px 0 0;
+  font-size: 12px;
+  color: var(--ink-dim);
+  font-style: italic;
+}
+.in-close {
+  margin-top: 30px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+}
+
+/* ---------- case file counter (bottom left) ---------- */
+#casefile {
+  position: fixed;
+  left: 30px;
+  bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 9px 14px;
+  background: linear-gradient(180deg, #c9a86a, #a9864a);
+  color: #2a1a0c;
+  border-radius: 3px 10px 3px 3px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  font-family: var(--typewriter);
+  opacity: 0;
+  transition: opacity 1s;
+  pointer-events: none;
+}
+body.started #casefile {
+  opacity: 0.92;
+}
+.cf-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.cf-count {
+  font-size: 20px;
+}
+#casefile.bump {
+  animation: cf-bump 0.7s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@keyframes cf-bump {
+  40% {
+    transform: translateY(-6px) rotate(-2deg);
+    box-shadow: 0 0 30px rgba(232, 184, 96, 0.6);
+  }
+}
+/* the progress bar sits above the case file */
+#hint {
+  bottom: 22px;
+}
+
+@media (max-width: 760px) {
+  #inspect {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    overflow-y: auto;
+  }
+  .in-sheet {
+    width: 86vw;
+    min-height: 0;
+  }
+  .in-title {
+    font-size: 32px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .in-sheet,
+  .in-stamp,
+  .in-label,
+  #casefile.bump {
+    transition: none;
+    animation: none;
+  }
+}

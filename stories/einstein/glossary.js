@@ -99,6 +99,11 @@ export default {
     role: "1960s – 1970s",
     text: "Harvey moved many times: Missouri, Kansas... The brain went with him every time.",
   },
+  note: {
+    name: "Einstein's last wish",
+    role: "Princeton, April 1955",
+    text: "He did not want a grave or a monument that people would visit like a shrine. His body was cremated and the ashes scattered in a secret place.",
+  },
   ciderBox: {
     name: "The Costa Cider box",
     role: "Wichita, 1978",

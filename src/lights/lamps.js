@@ -18,7 +18,7 @@ export function createAmbient(intensity = 0.25, sky = "#c8a888", ground = "#1a12
  * A lamp hanging from the ceiling: the lamp model (cord + shade + bulb) + a SpotLight pointing down.
  * Place it with lamp.position.set(x, ceilingHeight, z).
  */
-export function createHangingLamp({ intensity = 30, color = "#ffd9a0", angle = 0.75, shadows = true, flickers = true } = {}) {
+export function createHangingLamp({ intensity = 30, color = "#ffd9a0", angle = 0.75, shadows = true, flickers = true, swing = 0.06 } = {}) {
   const lamp = getModel("hanging-lamp"); // the bulb is 0.9 m under the ceiling
 
   const spot = new THREE.SpotLight(color, intensity, 12, angle, 0.5, 2);
@@ -29,10 +29,17 @@ export function createHangingLamp({ intensity = 30, color = "#ffd9a0", angle = 0
 
   lamp.userData.light = spot;
   lamp.userData.baseIntensity = intensity;
-  if (flickers) {
-    const seed = Math.random() * 10;
-    lamp.userData.update = (time) => (spot.intensity = lamp.userData.baseIntensity * buzz(time, seed));
-  }
+  // the lamp hangs from the ceiling, so rotating it swings it like a pendulum,
+  // and the spot light (its child) sweeps the light and the shadows across the room
+  const seed = Math.random() * 10;
+  lamp.userData.swing = swing; // amplitude in radians, a set can change it
+  lamp.userData.update = (time) => {
+    if (flickers) spot.intensity = lamp.userData.baseIntensity * buzz(time, seed);
+    if (!lamp.userData.manual) {
+      lamp.rotation.z = Math.sin(time * 1.1 + seed) * lamp.userData.swing;
+      lamp.rotation.x = Math.sin(time * 0.8 + seed * 2) * lamp.userData.swing * 0.4;
+    }
+  };
   return lamp;
 }
 
@@ -82,7 +89,7 @@ export function createHeadlights(intensity = 40) {
 
 function setupShadow(light) {
   light.castShadow = true;
-  light.shadow.mapSize.set(1024, 1024);
+  light.shadow.mapSize.set(2048, 2048); // sharper shadow shapes
   light.shadow.camera.near = 0.1;
   light.shadow.bias = -0.0015;
   light.shadow.radius = 4;

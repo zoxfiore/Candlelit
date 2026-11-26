@@ -7,12 +7,15 @@
 //   return set
 
 import * as THREE from "three";
+import { createDust } from "./dust.js";
 
-export function createSet({ background = "#070505", fog = null } = {}) {
+export function createSet({ background = "#070505", fog = null, dust = true } = {}) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(background);
   // fog: things far away fade into the background colour (gives depth, hides the room's edges)
   if (fog) scene.fog = new THREE.Fog(background, fog[0], fog[1]);
+
+  if (dust) scene.add(createDust(dust === true ? {} : dust));
 
   const updaters = [];
   let animated = null; // objects with userData.update (candles, lamps...), found once
@@ -26,14 +29,17 @@ export function createSet({ background = "#070505", fog = null } = {}) {
     onUpdate(fn) {
       updaters.push(fn);
     },
-    /** called every frame by the story director while this set is on screen */
-    update(time, delta, t) {
+    /**
+     * called every frame by the story director while this set is on screen.
+     * ctx = { input, camera, gate, resolve(id) }: gate is the id of the interaction the story waits for
+     */
+    update(time, delta, t, ctx) {
       if (!animated) {
         animated = [];
         scene.traverse((o) => o.userData.update && animated.push(o));
       }
       for (const o of animated) o.userData.update(time, delta);
-      for (const fn of updaters) fn(time, delta, t);
+      for (const fn of updaters) fn(time, delta, t, ctx);
     },
   };
 }

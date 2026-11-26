@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;600&family=Special+Elite&family=Homemade+Apple&display=swap"
       rel="stylesheet"
     />
   </head>
@@ -34,6 +34,35 @@
       <div class="tt-name"></div>
       <div class="tt-role"></div>
       <div class="tt-text"></div>
+    </div>
+
+    <div id="prompt">
+      <div class="pr-icon"></div>
+      <div class="pr-text"></div>
+      <div class="pr-bar"><span></span></div>
+    </div>
+    <nav id="rail"></nav>
+
+    <!-- case file: how many exhibits the viewer has found -->
+    <div id="casefile" title="Exhibits found">
+      <span class="cf-label">Case file · Harvey, T.</span>
+      <span class="cf-count">0 / 12</span>
+    </div>
+
+
+    <!-- inspect view: a clicked piece of evidence, up close -->
+    <div id="inspect" aria-live="polite">
+      <div class="in-sheet">
+        <div class="in-stamp"></div>
+        <div class="in-doc"></div>
+      </div>
+      <div class="in-label">
+        <div class="in-date"></div>
+        <div class="in-title"></div>
+        <p class="in-caption"></p>
+        <p class="in-note">Reconstructed for this story from the facts of the case.</p>
+        <div class="in-close">Click anywhere or press Esc to put it back</div>
+      </div>
     </div>
 
     <div id="progress"><div id="progress-bar"></div></div>

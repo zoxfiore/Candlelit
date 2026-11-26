@@ -13,7 +13,7 @@ export function createRenderer(container) {
 
   // colour: tone mapping turns very bright light values into nice screen colours
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.3;
+  renderer.toneMappingExposure = 1.1;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   container.appendChild(renderer.domElement);

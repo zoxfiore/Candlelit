@@ -33,6 +33,15 @@ export function createCutout(texture, height, { info = null, faceCamera = true, 
   cutout.userData.faceCamera = faceCamera; // see billboard.js
   cutout.userData.baseGlow = glow; // used by the hover highlight
   cutout.userData.isSolidAt = makeAlphaTest(image); // used by the hover: ignore transparent pixels
+
+  // idle animation: people breathe (tiny stretch from the feet) — objects stay still
+  if (faceCamera) {
+    const seed = Math.random() * 10;
+    cutout.userData.update = (time) => {
+      const a = cutout.userData.act; // optional reaction set by the story: { jolt: 0..1 }
+      cutout.scale.y = 1 + Math.sin(time * 1.6 + seed) * 0.006 + (a?.jolt ?? 0) * 0.04;
+    };
+  }
   return cutout;
 }
 

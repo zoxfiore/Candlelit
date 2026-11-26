@@ -29,12 +29,27 @@ export function buildLab() {
   set.add(createAmbient(0.3));
   const candle = set.add(createCandle({ intensity: 2 }));
   candle.position.set(-1.15, 0.8, -0.6);
-  set.add(createSpot({ from: [-0.3, 2.9, 0.2], to: [-0.3, 0.8, -0.8], intensity: 25, angle: 0.5 }));
+  const spotLamp = set.add(createSpot({ from: [-0.3, 2.9, 0.2], to: [-0.3, 0.8, -0.8], intensity: 25, angle: 0.5 }));
   set.add(createMoonlight({ from: [-3, 4, -6], to: [0, 0, 0], intensity: 0.35 }));
 
-  // 0 blocks at the start of the chapter, all 240 at 60% of it
-  set.onUpdate((time, delta, t) => {
-    blocks.count = Math.round(240 * Math.min(1, Math.max(0, (t - 0.1) / 0.5)));
+  // INTERACTION, gate "cut": hold the mouse button and the brain splits into 240 blocks
+  // that fly onto the bench (InstancedMesh: 240 matrices updated every frame, one draw call).
+  // While you hold, the spot light buzzes brighter and the camera trembles a little.
+  const spot = spotLamp.userData.light;
+  const spotBase = spot.intensity;
+  let cut = 0;
+  set.onUpdate((time, delta, t, ctx) => {
+    const holding = ctx.gate === "cut" && ctx.input.down;
+    if (holding) cut = Math.min(1, cut + delta / 3.5);
+    if (ctx.done("cut")) cut = Math.min(1, cut + delta / 2); // finish the animation by itself
+    blocks.userData.setProgress(cut);
+    if (ctx.gate === "cut") {
+      ctx.progress(cut);
+      if (cut >= 1) ctx.resolve("cut");
+    }
+    const shake = holding ? 0.006 : 0;
+    ctx.rig.offset.set((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake, 0);
+    spot.intensity = spotBase * (holding ? 1.25 + Math.sin(time * 40) * 0.1 : 1);
   });
   return set;
 }
