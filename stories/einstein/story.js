@@ -196,6 +196,7 @@ export default {
         shots: [{ at: 0.45, pos: [0, 2.4, -6.5], look: [0, 0.7, 8], fov: 55 }], // behind the car: you drive
         to: { pos: [3.2, 1.4, 1.8], look: [0, 0.85, -0.2] },
       },
+      noExplore: true, // you are driving: no walking around
       gates: [{ id: "drive", at: 0.46, kind: "keys", prompt: "Take the wheel: ← → (or hold the mouse) to steer the Buick." }],
       audio: "audio/chapter-09.mp3",
       lines: [

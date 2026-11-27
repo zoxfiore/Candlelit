@@ -6,7 +6,7 @@ export function createPrompt() {
   const text = el.querySelector(".pr-text");
   const icon = el.querySelector(".pr-icon");
   const bar = el.querySelector(".pr-bar span");
-  const ICONS = { move: "🕯", drag: "✋", hold: "◉", click: "👆", keys: "⇆" };
+  const ICONS = { move: "🕯", drag: "✋", hold: "◉", click: "👆", keys: "⇆", explore: "🕯" };
 
   return {
     show(gate) {

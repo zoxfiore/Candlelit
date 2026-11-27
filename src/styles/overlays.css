@@ -615,3 +615,56 @@ body.started #casefile {
     animation: none;
   }
 }
+
+/* ---------- first person ---------- */
+#crosshair {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: rgba(255, 228, 180, 0.85);
+  box-shadow: 0 0 10px rgba(255, 190, 110, 0.8);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.4s, transform 0.25s, width 0.25s, height 0.25s, margin 0.25s;
+  pointer-events: none;
+  z-index: 30;
+}
+body.first-person #crosshair { opacity: 1; transform: scale(1); }
+/* the dot opens into a ring when it is on a clue */
+body.first-person.can-inspect #crosshair {
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  background: transparent;
+  border: 1.5px solid rgba(255, 210, 140, 0.95);
+}
+body.first-person.fp-locked, body.first-person.fp-locked * { cursor: none !important; }
+#fp-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  display: flex;
+  gap: 22px;
+  padding: 10px 20px;
+  transform: translate(-50%, 12px);
+  font: 12px/1 "Courier New", monospace;
+  letter-spacing: 0.06em;
+  color: rgba(240, 225, 200, 0.75);
+  background: rgba(14, 9, 6, 0.55);
+  border: 1px solid rgba(232, 184, 96, 0.25);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.6s, transform 0.6s;
+  pointer-events: none;
+  z-index: 30;
+}
+#fp-hint b { color: #e8b860; font-weight: 600; }
+#fp-hint span { white-space: nowrap; }
+#fp-hint.visible { opacity: 1; transform: translate(-50%, 0); }
+/* in first person the subtitles and the case-file stay, the gate card moves up out of the way */
+body.first-person #prompt { opacity: 0 !important; }

@@ -1,7 +1,7 @@
 // main.js only connects the pieces together. No story logic here.
 //
 //   assets/ + world/                     load the asset files, rooms, models         (Student 1: World)
-//   characters/ + lights/ + shaders/     people, hover cards, candles, GLSL flame    (Student 2: Characters & Light)
+//   characters/ + lights/ + shaders/     people, candles, GLSL flame    (Student 2: Characters & Light)
 //   story/ + ui/                         scroll, chapters, camera, subtitles, audio  (Student 3: Story & UI)
 //   stories/einstein/       the story itself: 12 sets, chapter texts, glossary
 
@@ -18,13 +18,12 @@ import { loadAssets } from "./assets/loader.js";
 import { createScroll } from "./story/scroll.js";
 import { createDirector } from "./story/director.js";
 import { createInput } from "./story/input.js";
+import { createFirstPerson } from "./story/firstPerson.js";
 import { createInspect } from "./ui/inspect.js";
 
 import { createStartScreen } from "./ui/startScreen.js";
 import { createTitleCard } from "./ui/titleCard.js";
 import { createSubtitles } from "./ui/subtitles.js";
-import { createTooltip } from "./ui/tooltip.js";
-import { createHover } from "./ui/hover.js";
 import { createNarrator } from "./ui/narrator.js";
 import { createHud } from "./ui/hud.js";
 import { createDebug } from "./ui/debug.js";
@@ -32,7 +31,6 @@ import { createPrompt } from "./ui/prompt.js";
 import { createRail } from "./ui/rail.js";
 
 import story from "../stories/einstein/story.js";
-import glossary from "../stories/einstein/glossary.js";
 import evidence from "../stories/einstein/evidence.js";
 
 async function start() {
@@ -49,7 +47,8 @@ async function start() {
   const post = createPost(renderer, camera); // bloom + film grain
   const input = createInput();
   const prompt = createPrompt();
-  const director = createDirector({ renderer, camera, story, post, input, prompt, evidence }); // builds the 12 sets
+  const firstPerson = createFirstPerson({ camera, canvas: renderer.domElement }); // walk with the candle
+  const director = createDirector({ renderer, camera, story, post, input, prompt, evidence, firstPerson }); // builds the 12 sets
   const scroll = createScroll(director.totalScreens);
   director.onGate((gate) => prompt.show(gate));
 
@@ -58,7 +57,8 @@ async function start() {
     camera,
     input,
     getScene: () => director.current?.set.scene,
-    isBlocked: () => !document.body.classList.contains("started") || document.body.classList.contains("waiting"),
+    // clues are found in first person only: walking to them with the candle IS the task
+    isBlocked: () => !document.body.classList.contains("started") || !firstPerson.active,
   });
   const rail = createRail({ chapters: director.chapters, onJump: (c) => scroll.goTo(c.start + 0.08) });
 
@@ -67,7 +67,6 @@ async function start() {
   const narrator = createNarrator();
   const hud = createHud();
   const debug = createDebug(renderer);
-  const hover = createHover({ camera, getScene: () => director.current?.set.scene, tooltip: createTooltip(glossary) });
 
   // when a new chapter starts: new title, new voice-over, new debug sliders
   director.onChapterChange((chapter) => {
@@ -92,11 +91,13 @@ async function start() {
     if (paused && Math.abs(window.scrollY / (window.innerHeight || 1) - scroll.current) > 0.01) scroll.jumpTo(scroll.current);
     const screens = paused ? scroll.current : scroll.update(delta, director.limit(scroll.current));
     const { chapter, t } = director.update(screens, time, delta);
+    if (firstPerson.active) input.pointer.set(0, 0); // in first person you aim with the centre of the screen
+    const wasOpen = inspect.open;
     inspect.update();
+    if (inspect.open && !wasOpen) firstPerson.release(); // free the mouse to read
     input.endFrame();
     subtitles.update(chapter, t);
     hud.update(screens, director.totalScreens);
-    hover.update();
   }
   requestAnimationFrame(animate);
 

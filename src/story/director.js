@@ -14,9 +14,9 @@ import { createCameraRig } from "./cameraRig.js";
 import { faceCamera } from "../characters/billboard.js";
 import { installEvidence } from "../world/evidence.js";
 
-const FADE = 0.06; // part of the chapter used to fade in / out
+const FADE = 0.08; // part of the chapter used to fade in / out
 
-export function createDirector({ renderer, camera, story, post, input, prompt, evidence = [] }) {
+export function createDirector({ renderer, camera, story, post, input, prompt, evidence = [] , firstPerson }) {
   const rig = createCameraRig(camera);
   const listeners = [];
   const gateListeners = [];
@@ -29,6 +29,14 @@ export function createDirector({ renderer, camera, story, post, input, prompt, e
     installEvidence(set, evidence.filter((e) => e.chapter === index + 1));
     const entry = { ...chapter, index, set, start, end: start + chapter.screens, isLast: index === story.chapters.length - 1 };
     for (const g of chapter.gates ?? []) gates.push({ ...g, chapter: entry, screens: start + g.at * chapter.screens, done: false });
+    // first-person investigation near the end of the chapter: walk with the candle and find its clue
+    const clue = evidence.find((e) => e.chapter === index + 1);
+    if (firstPerson && clue && !chapter.noExplore) {
+      gates.push({
+        id: `explore-${index + 1}`, kind: "explore", clue, chapter: entry, screens: start + 0.86 * chapter.screens, done: false,
+        prompt: "Click to take the candle. Walk with W A S D (Z Q S D), look with the mouse, and find the glowing clue.",
+      });
+    }
     start += chapter.screens;
     return entry;
   });
@@ -94,6 +102,13 @@ export function createDirector({ renderer, camera, story, post, input, prompt, e
       }
 
       rig.update(chapter.camera, t, delta);
+      // an investigation gate: hand the camera to the viewer (first person, candle in hand)
+      if (activeGate?.kind === "explore" && !firstPerson.active && !activeGate.entered) {
+        activeGate.entered = true;
+        const g = activeGate;
+        firstPerson.enter(chapter.set, g.clue, () => resolve(g.id));
+      }
+      firstPerson?.update(time, delta);
       chapter.set.update(time, delta, t, { input, camera, rig, gate: activeGate?.id ?? null, resolve, progress: (p) => prompt?.progress(p), done: (id) => gates.some((g) => g.id === id && g.done) });
       faceCamera(chapter.set.scene, camera);
 
@@ -101,7 +116,9 @@ export function createDirector({ renderer, camera, story, post, input, prompt, e
       let fade = 0;
       if (chapter.index > 0) fade = Math.max(fade, 1 - t / FADE);
       if (chapter.index < chapters.length - 1) fade = Math.max(fade, (t - (1 - FADE)) / FADE);
-      fadeElement.style.opacity = Math.min(1, Math.max(0, fade));
+      // the picture burns away like old paper (shader in post.js) instead of a plain fade to black
+      post.setBurn(Math.min(1, Math.max(0, fade)));
+      fadeElement.style.opacity = 0;
 
       post.render(chapter.set.scene, time);
       return { chapter, t };
