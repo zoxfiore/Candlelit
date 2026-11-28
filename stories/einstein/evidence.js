@@ -19,7 +19,7 @@ export default [
     caption: "Einstein refused to become a relic. He wanted no place where people could come and worship him.",
   },
   {
-    id: "autopsy", chapter: 2, place: [-1.75, 0.885, -1.0, 0.3], kind: "typed", reconstructed: true,
+    id: "autopsy", chapter: 2, place: [2.2, 1.018, -2.25, 0.1], kind: "typed", reconstructed: true, // inside the locked cabinet
     title: "Autopsy report", date: "April 18, 1955",
     body: "PRINCETON HOSPITAL — PATHOLOGY\n\nSubject: EINSTEIN, Albert. Age 76.\nPathologist: T. S. HARVEY, M.D.\n\nCause of death: rupture of an\nabdominal aortic aneurysm.\n\nBrain: removed. Weight 1,230 g.\nRetained for study.",
     caption: "The report explains the death in two lines. The last line is the one that will follow Harvey for 43 years.",
@@ -30,7 +30,7 @@ export default [
     caption: "The family learned that the brain had been kept the same way everyone else did: by reading about it.",
   },
   {
-    id: "safe", chapter: 4, place: [-1.0, 0.59, -0.85, -0.4], kind: "typed", reconstructed: true,
+    id: "safe", chapter: 4, place: [2.6, 1.248, 2.04, 1.57], kind: "typed", reconstructed: true, // on top of box 17, once it slides out
     title: "Safe-deposit receipt", date: "New York City",
     body: "BANK — SAFE-DEPOSIT DEPARTMENT\n\nBox holder: Dr. Henry ABRAMS\nContents: declared private.\n\nAccess by the holder only.",
     caption: "Einstein's eye doctor kept his eyes in a bank box in New York. It is said they are still there.",
@@ -64,7 +64,7 @@ export default [
     caption: "Harvey was 84. Michael Paterniti drove, and later told the whole trip in Driving Mr. Albert.",
   },
   {
-    id: "evelyn", chapter: 10, place: [-0.3, 0.455, -0.75, 0.2], kind: "letter", reconstructed: true,
+    id: "evelyn", chapter: 10, place: [-5.25, 0.56, -1.2, 0.3], /* on the bed, in the bedroom */ kind: "letter", reconstructed: true,
     title: "Evelyn's answer", date: "Berkeley, 1997",
     body: "Thank you for coming\nall this way.\n\nBut I do not want it.\n\n— Evelyn",
     caption: "Harvey crossed the country to meet Einstein's granddaughter. She looked at the box, and refused it.",
@@ -79,5 +79,11 @@ export default [
     id: "plaque", chapter: 12, attach: "slides", kind: "photo", image: "museum-plaque",
     title: "On display", date: "Mütter Museum, today",
     caption: "Some of the slides can be seen today in Philadelphia. Scientists still argue about what they prove.",
+  },
+  {
+    id: "lastLetter", chapter: 12, attach: "letter2", kind: "letter", reconstructed: true,
+    title: "The last wish, again", date: "Mütter Museum, today",
+    body: "No grave.\nNo monument.\nNo place where people\ncome to worship me.",
+    caption: "He asked for no shrine. Today people queue to look at his brain. The letter burns; the slides stay.",
   },
 ];

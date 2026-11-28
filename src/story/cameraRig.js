@@ -4,8 +4,9 @@
 //   camera: { from: { pos, look }, to: { pos, look },
 //             shots: [ { at: 0.4, pos, look, fov }, ... ] }   // at = chapter progress 0..1
 //
-// Between two shots the camera glides with an ease (slow start, slow end), so every beat of
-// the story gets its own framing: a wide shot, then a close-up on a face, then a reveal...
+// The camera flies along a SMOOTH CURVE through all the shots (a Catmull-Rom spline: it passes
+// through every point and bends softly between them), so it never stops and restarts at each shot
+// like a robot. Only the very start and the very end of the chapter ease in / out.
 // On top of that the real camera FOLLOWS that goal with damping, so cuts never feel jerky,
 // and the mouse adds a small parallax so the scene feels alive even without scrolling.
 
@@ -15,17 +16,27 @@ const goalPos = new THREE.Vector3();
 const goalLook = new THREE.Vector3();
 const curPos = new THREE.Vector3(0, 1.6, 5);
 const curLook = new THREE.Vector3(0, 1.2, 0);
-const a = new THREE.Vector3();
-const b = new THREE.Vector3();
 
-const ease = (t) => t * t * (3 - 2 * t); // smoothstep
+const ease = (t) => t * t * (3 - 2 * t); // smoothstep: slow start, slow end
+const easeIn = (t) => t * t * (2 - t); // slow start, keeps its speed at the end (no stop mid-chapter)
+const easeOut = (t) => t + t * t - t * t * t; // keeps its speed at the start, slow end
 
-/** the list of key shots of a chapter, sorted by time */
+
+/** the key shots of a chapter sorted by time, + the curves through their positions and targets */
 function keysOf(shot) {
   if (!shot._keys) {
-    shot._keys = [{ at: 0, ...shot.from }, ...(shot.shots ?? []), { at: 1, ...shot.to }].sort((x, y) => x.at - y.at);
+    const keys = [{ at: 0, ...shot.from }, ...(shot.shots ?? []), { at: 1, ...shot.to }].sort((x, y) => x.at - y.at);
+    shot._keys = keys;
+    shot._posCurve = new THREE.CatmullRomCurve3(keys.map((k) => new THREE.Vector3(...k.pos)), false, "centripetal");
+    shot._lookCurve = new THREE.CatmullRomCurve3(keys.map((k) => new THREE.Vector3(...k.look)), false, "centripetal");
   }
   return shot._keys;
+}
+
+/** the pose at the very start of a chapter (used to show the next chapter during a transition) */
+export function startPose(shot) {
+  const k = keysOf(shot)[0];
+  return { pos: new THREE.Vector3(...k.pos), look: new THREE.Vector3(...k.look), fov: k.fov ?? shot.fov ?? 45 };
 }
 
 export function createCameraRig(camera) {
@@ -42,19 +53,37 @@ export function createCameraRig(camera) {
     /** extra offset a set can add (camera shake, follow the car...) */
     offset: new THREE.Vector3(),
 
+    /** put another camera where a chapter STARTS (same mouse parallax), to film the next chapter in a transition */
+    place(cam, shot) {
+      const p = startPose(shot);
+      cam.position.copy(p.pos);
+      cam.position.x += smoothMouse.x * 0.12;
+      cam.position.y -= smoothMouse.y * 0.06;
+      cam.lookAt(p.look);
+      if (cam.fov !== p.fov) {
+        cam.fov = p.fov;
+        cam.updateProjectionMatrix();
+      }
+      cam.updateMatrixWorld();
+    },
+
     update(shot, t, delta) {
       const keys = keysOf(shot);
       let i = 0;
       while (i < keys.length - 2 && t > keys[i + 1].at) i++;
       const k0 = keys[i];
       const k1 = keys[i + 1];
-      const k = ease(THREE.MathUtils.clamp((t - k0.at) / Math.max(1e-4, k1.at - k0.at), 0, 1));
-      goalPos.lerpVectors(a.fromArray(k0.pos), b.fromArray(k1.pos), k);
-      goalLook.lerpVectors(a.fromArray(k0.look), b.fromArray(k1.look), k);
-      const goalFov = THREE.MathUtils.lerp(k0.fov ?? shot.fov ?? 45, k1.fov ?? shot.fov ?? 45, k);
+      const local = THREE.MathUtils.clamp((t - k0.at) / Math.max(1e-4, k1.at - k0.at), 0, 1);
+      // position on the curve: segment i of (n - 1), eased only on the first and last segments
+      const first = i === 0, last = i === keys.length - 2;
+      const k = first && last ? ease(local) : first ? easeIn(local) : last ? easeOut(local) : local;
+      const u = (i + k) / (keys.length - 1);
+      shot._posCurve.getPoint(u, goalPos);
+      shot._lookCurve.getPoint(u, goalLook);
+      const goalFov = THREE.MathUtils.lerp(k0.fov ?? shot.fov ?? 45, k1.fov ?? shot.fov ?? 45, ease(local));
 
       // new chapter = a hard cut (the screen is black at that moment anyway)
-      const damp = shot !== lastShot ? 1 : 1 - Math.exp(-6 * delta);
+      const damp = shot !== lastShot ? 1 : 1 - Math.exp(-4 * delta);
       lastShot = shot;
       curPos.lerp(goalPos, damp);
       curLook.lerp(goalLook, damp);

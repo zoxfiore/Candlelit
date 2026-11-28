@@ -7,7 +7,6 @@
 //   return set
 
 import * as THREE from "three";
-import { createDust } from "./dust.js";
 
 export function createSet({ background = "#070505", fog = null, dust = true } = {}) {
   const scene = new THREE.Scene();
@@ -15,7 +14,7 @@ export function createSet({ background = "#070505", fog = null, dust = true } = 
   // fog: things far away fade into the background colour (gives depth, hides the room's edges)
   if (fog) scene.fog = new THREE.Fog(background, fog[0], fog[1]);
 
-  if (dust) scene.add(createDust(dust === true ? {} : dust));
+  // (floating dust was removed: `dust` is ignored, kept so old sets still work)
 
   const updaters = [];
   let animated = null; // objects with userData.update (candles, lamps...), found once

@@ -26,18 +26,25 @@ export function createInspect({ total, camera, getScene, input, isBlocked }) {
   const raycaster = new THREE.Raycaster();
   let found = 0;
   let open = false;
+  let lastDrawable = null;
 
   const escape = (s) => s.replace(/[&<>]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[ch]);
 
+  function markFound(item) {
+    if (item.found) return;
+    item.found = true;
+    item.exhibit = ++found;
+    counterCount.textContent = `${found} / ${total}`;
+    counter.classList.remove("bump");
+    void counter.offsetWidth; // restart the CSS animation
+    counter.classList.add("bump");
+  }
+  // a clue with its own 3D presentation (the letter) tells us when it has been read
+  window.addEventListener("candlelit:found", (e) => markFound(e.detail));
+
   function show(item) {
-    if (!item.found) {
-      item.found = true;
-      item.exhibit = ++found;
-      counterCount.textContent = `${found} / ${total}`;
-      counter.classList.remove("bump");
-      void counter.offsetWidth; // restart the CSS animation
-      counter.classList.add("bump");
-    }
+    markFound(item);
+    window.dispatchEvent(new CustomEvent("candlelit:inspected", { detail: item }));
     sheet.className = `in-sheet kind-${item.kind}`;
     doc.innerHTML =
       item.kind === "photo"
@@ -76,22 +83,40 @@ export function createInspect({ total, camera, getScene, input, isBlocked }) {
     get open() {
       return open;
     },
-    /** every frame: hover cursor + click */
+    /**
+     * every frame: what is under the aiming dot?
+     *   - an object you can use (userData.interact: radio, drawer, violin, the letter...) -> click uses it
+     *   - a surface you can draw on (userData.draw: the blackboard) -> hold the click to write
+     *   - a clue (userData.evidence) -> click opens the inspect card
+     */
     update() {
       const scene = getScene();
-      if (open || !scene) return;
+      if (open || !scene || document.body.classList.contains("inspecting")) return;
       raycaster.setFromCamera(input.pointer, camera);
-      let item = null;
+      let item = null, usable = null, drawable = null, hitUv = null;
       for (const hit of raycaster.intersectObjects(scene.children, true)) {
         const o = hit.object;
         if (o.userData.noHover || o.isPoints || o.isSprite) continue;
         if (o.userData.isSolidAt && hit.uv && !o.userData.isSolidAt(hit.uv)) continue;
+        if (hit.distance > 3.2) break; // too far to reach
+        // the object itself or one of its parents may be usable
+        for (let p = o; p && !usable; p = p.parent) if (p.userData.interact) usable = p;
+        if (o.userData.draw) {
+          drawable = o;
+          hitUv = hit.uv;
+        }
         item = o.userData.evidence ?? null;
-        break; // the first solid thing under the mouse decides
+        break; // the first solid thing under the dot decides
       }
       const blocked = isBlocked();
-      document.body.classList.toggle("can-inspect", !!item && !blocked);
-      if (item && !blocked && input.clicked) show(item);
+      document.body.classList.toggle("can-inspect", !!(item || usable || drawable) && !blocked);
+      if (blocked) return;
+      if (drawable) drawable.userData.draw(hitUv, input.down);
+      else if (lastDrawable) lastDrawable.userData.draw(null, false);
+      lastDrawable = drawable;
+      if (!input.clicked) return;
+      if (usable) usable.userData.interact();
+      else if (item) show(item);
     },
   };
 }

@@ -103,8 +103,18 @@ export function installEvidence(set, items) {
       glint.material.rotation = time * 0.4;
       const s = 0.09 + 0.03 * pulse;
       glint.scale.set(s, s, s);
-      glint.visible = fade > 0;
+      glint.visible = fade > 0 && target.visible; // a hidden clue hides its spark too
     };
     set.add(glint);
+    target.userData.glint = glint;
   }
+}
+
+/** the object that carries a clue (to hide it until a task is done, or to block it): clueObject(scene, "safe") */
+export function clueObject(scene, id) {
+  let found = null;
+  scene.traverse((o) => {
+    if (!found && o.userData.evidence?.id === id && !o.parent?.userData.evidence) found = o;
+  });
+  return found;
 }

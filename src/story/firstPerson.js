@@ -85,7 +85,10 @@ export function createFirstPerson({ camera, canvas }) {
     document.body.classList.toggle("fp-locked", document.pointerLockElement === canvas);
   });
 
-  function enter(set, clue, done) {
+  let withCandle = true;
+  /** options.candle = false: you walk as yourself, no candle, the room keeps its lights */
+  function enter(set, clue, done, { candle: holdCandle = true } = {}) {
+    withCandle = holdCandle;
     scene = set.scene;
     item = clue;
     onDone = done;
@@ -102,19 +105,23 @@ export function createFirstPerson({ camera, canvas }) {
     scene.traverse((o) => {
       if (o.isMesh && !o.userData.noHover && o.geometry) room.expandByObject(o);
     });
-    bounds.set(new THREE.Vector3(pos.x - 3.2, 0, pos.z - 3.2), new THREE.Vector3(pos.x + 3.2, 3, pos.z + 3.2));
-    if (!room.isEmpty()) bounds.intersect(room);
-    bounds.expandByVector(new THREE.Vector3(-0.35, 0, -0.35));
+    if (scene.userData.walkBounds) {
+      bounds.copy(scene.userData.walkBounds); // a set with real rooms says where you can walk
+    } else {
+      bounds.set(new THREE.Vector3(pos.x - 3.2, 0, pos.z - 3.2), new THREE.Vector3(pos.x + 3.2, 3, pos.z + 3.2));
+      if (!room.isEmpty()) bounds.intersect(room);
+      bounds.expandByVector(new THREE.Vector3(-0.35, 0, -0.35));
+    }
     bounds.expandByPoint(pos); // never start outside it
-    // the room gets darker: your candle becomes the main light
+    // the room gets darker: your candle becomes the main light (only when you hold one)
     scene.traverse((o) => {
-      if (o.isLight && !o.userData.fpKeep) {
+      if (withCandle && o.isLight && !o.userData.fpKeep) {
         dimmed.push([o, o.intensity]);
       }
     });
     candlePos.copy(camera.position);
     candleQuat.copy(camera.quaternion);
-    scene.add(candle);
+    if (withCandle) scene.add(candle);
     document.body.classList.add("first-person");
     hint.classList.add("visible");
   }
@@ -131,6 +138,10 @@ export function createFirstPerson({ camera, canvas }) {
   }
 
   candle.traverse((o) => (o.userData.fpKeep = true));
+  // ?dev: a handle for testing / rehearsing (teleport and turn the first-person player)
+  if (new URLSearchParams(location.search).has("dev")) {
+    window.candlelitDev = Object.assign(window.candlelitDev ?? {}, { place(x, z, yawDeg = 0, pitchDeg = 0) { pos.set(x, 0, z); yaw = goalYaw = (yawDeg * Math.PI) / 180; pitch = goalPitch = (pitchDeg * Math.PI) / 180; }, get pos() { return pos; } });
+  }
 
   return {
     get active() {
@@ -149,15 +160,16 @@ export function createFirstPerson({ camera, canvas }) {
     update(time, delta) {
       blend = THREE.MathUtils.clamp(blend + (active ? delta : -delta) / 0.9, 0, 1);
       if (blend === 0) {
-        if (candle.parent && !active) {
-          candle.parent.remove(candle);
+        if (!active) {
+          candle.parent?.remove(candle);
           for (const [l, i] of dimmed) l.intensity = i;
           dimmed.length = 0;
         }
         return;
       }
 
-      if (active) {
+      const reading = document.body.classList.contains("inspecting"); // reading a letter, looking in a microscope...
+      if (active && !reading) {
         // ---- walk ----
         const f = (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0);
         const s = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0);
@@ -168,6 +180,16 @@ export function createFirstPerson({ camera, canvas }) {
         pos.addScaledVector(vel, delta);
         pos.x = THREE.MathUtils.clamp(pos.x, bounds.min.x, bounds.max.x);
         pos.z = THREE.MathUtils.clamp(pos.z, bounds.min.z, bounds.max.z);
+        // places you cannot walk into (a stairwell, a sarcophagus...): a set lists them as
+        // scene.userData.noWalk = [{ minX, maxX, minZ, maxZ }]; we push you out the shortest way
+        for (const b of scene.userData.noWalk ?? []) {
+          if (pos.x > b.minX && pos.x < b.maxX && pos.z > b.minZ && pos.z < b.maxZ) {
+            const out = [[b.minX - pos.x, 0], [b.maxX - pos.x, 0], [0, b.minZ - pos.z], [0, b.maxZ - pos.z]];
+            out.sort((u, v) => Math.abs(u[0] + u[1]) - Math.abs(v[0] + v[1]));
+            pos.x += out[0][0];
+            pos.z += out[0][1];
+          }
+        }
         // ---- look ----
         const k = 1 - Math.exp(-14 * delta);
         yaw += (goalYaw - yaw) * k;
