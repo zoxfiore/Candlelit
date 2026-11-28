@@ -20,3 +20,8 @@ export const CHARACTERS = [
 ];
 
 export const PROPS = ["brain-jar", "microscope", "newspaper", "glial-board", "portrait", "museum-plaque"];
+
+// Rigged, animated characters (public/assets/actors/<name>.glb, e.g. from Sketchfab + Mixamo).
+// Add a name here once its file is in the folder; until then the story uses a low-poly figure
+// (src/characters/figure.js). Names used by the stories: carter, carnarvon, evelyn, worker, boy.
+export const ACTORS = [];

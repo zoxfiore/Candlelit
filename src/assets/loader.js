@@ -7,11 +7,13 @@
 
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { MODELS, TEXTURES, CHARACTERS, PROPS } from "./manifest.js";
+import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
+import { MODELS, TEXTURES, CHARACTERS, PROPS, ACTORS } from "./manifest.js";
 
 const models = {};
 const textures = {};
 const images = {};
+const actors = {}; // rigged characters: { scene, animations }
 
 export function loadAssets(onProgress) {
   // the LoadingManager counts the files and tells us the progress
@@ -28,6 +30,9 @@ export function loadAssets(onProgress) {
     const name = file.split(".")[0]; // "plaster.png" -> "plaster"
     textures[name] = textureLoader.load(`assets/textures/${file}`);
     textures[name].colorSpace = THREE.SRGBColorSpace;
+  }
+  for (const name of ACTORS) {
+    gltfLoader.load(`assets/actors/${name}.glb`, (gltf) => (actors[name] = gltf), undefined, () => {}); // missing = use the figure
   }
   for (const name of CHARACTERS) images[name] = loadImage(textureLoader, `assets/characters/${name}.png`);
   for (const name of PROPS) images[name] = loadImage(textureLoader, `assets/props/${name}.png`);
@@ -68,4 +73,14 @@ export function getTexture(name, repeatX = 1, repeatY = 1) {
 /** the texture of a character or 2D prop image */
 export function getImage(name) {
   return images[name];
+}
+
+/** is there a rigged .glb for this character? */
+export function hasActor(name) {
+  return !!actors[name];
+}
+
+/** a copy of a rigged character (SkeletonUtils.clone also copies the skeleton) + its animation clips */
+export function getActor(name) {
+  return { scene: cloneSkinned(actors[name].scene), animations: actors[name].animations };
 }

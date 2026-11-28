@@ -5,6 +5,7 @@
 //   placeModel(set, "table", 0.8, -0.6, { scale: 0.7, rotationY: 0.3, y: 0 })
 
 import { getModel } from "../assets/loader.js";
+import { flashNote } from "../ui/task.js";
 
 export function placeModel(set, name, x, z, { y = 0, rotationY = 0, scale = 1, info = null } = {}) {
   const model = getModel(name);
@@ -12,6 +13,8 @@ export function placeModel(set, name, x, z, { y = 0, rotationY = 0, scale = 1, i
   model.rotation.y = rotationY;
   model.scale.setScalar(scale);
   if (info) model.userData.info = info;
+  // a decorative door (in an outside wall: it leads nowhere) says so when you try it
+  if (name === "door") model.userData.interact = () => flashNote("This door is locked.");
   set.add(model);
   return model;
 }

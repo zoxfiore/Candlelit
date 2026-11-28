@@ -27,6 +27,8 @@ export function placeCharacter(set, name, x, z, { y = 0, scale = 1 } = {}) {
   const { height, info } = CAST[name];
   const character = createCutout(getImage(name), height * scale, { info });
   character.position.set(x, y, z);
+  character.userData.isPerson = true; // the candle cursor lights people up
   set.add(character);
   return character;
 }
+

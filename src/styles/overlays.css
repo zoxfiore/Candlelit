@@ -9,14 +9,6 @@
 }
 
 /* black layer used to fade between chapters (opacity set in JS) */
-#fade {
-  position: fixed;
-  inset: 0;
-  background: #000;
-  opacity: 1;
-  pointer-events: none;
-}
-
 /* ---------- chapter title (top left) ---------- */
 #title-card {
   position: fixed;
@@ -615,3 +607,292 @@ body.started #casefile {
     animation: none;
   }
 }
+
+/* ---------- first person ---------- */
+#crosshair {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: rgba(255, 228, 180, 0.85);
+  box-shadow: 0 0 10px rgba(255, 190, 110, 0.8);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.4s, transform 0.25s, width 0.25s, height 0.25s, margin 0.25s;
+  pointer-events: none;
+  z-index: 30;
+}
+body.first-person #crosshair { opacity: 1; transform: scale(1); }
+/* the dot opens into a ring when it is on a clue */
+body.first-person.can-inspect #crosshair {
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  background: transparent;
+  border: 1.5px solid rgba(255, 210, 140, 0.95);
+}
+body.first-person.fp-locked, body.first-person.fp-locked * { cursor: none !important; }
+#fp-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  display: flex;
+  gap: 22px;
+  padding: 10px 20px;
+  transform: translate(-50%, 12px);
+  font: 12px/1 "Courier New", monospace;
+  letter-spacing: 0.06em;
+  color: rgba(240, 225, 200, 0.75);
+  background: rgba(14, 9, 6, 0.55);
+  border: 1px solid rgba(232, 184, 96, 0.25);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.6s, transform 0.6s;
+  pointer-events: none;
+  z-index: 30;
+}
+#fp-hint b { color: #e8b860; font-weight: 600; }
+#fp-hint span { white-space: nowrap; }
+#fp-hint.visible { opacity: 1; transform: translate(-50%, 0); }
+/* in first person the subtitles and the case-file stay, the gate card moves up out of the way */
+body.first-person #prompt { opacity: 0 !important; }
+
+/* ---------- story picker (start screen) ---------- */
+#story-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 26px;
+  margin: 18px 0 8px;
+  max-width: 980px;
+}
+.story-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: min(420px, 88vw);
+  padding: 34px 30px 24px;
+  text-align: left;
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(232, 184, 96, 0.12), transparent 60%),
+    linear-gradient(180deg, rgba(34, 22, 14, 0.92), rgba(16, 10, 7, 0.95));
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.8s calc(var(--i) * 0.15s), transform 0.8s calc(var(--i) * 0.15s) cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.4s, border-color 0.4s;
+}
+#story-list.shown .story-card { opacity: 1; transform: none; }
+.story-card:hover, .story-card:focus-visible, .story-card.preselected {
+  border-color: var(--gold);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6), 0 0 60px rgba(232, 160, 70, 0.16);
+  transform: translateY(-4px);
+  outline: none;
+}
+#story-list.decided .story-card:not(.chosen) { opacity: 0.15; }
+.story-card.chosen { border-color: var(--gold); }
+.sc-tab {
+  position: absolute;
+  top: -11px;
+  left: 22px;
+  padding: 3px 12px;
+  font: 11px/1.4 "Special Elite", "Courier New", monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #1a100a;
+  background: #c9a86a;
+  border-radius: 3px 3px 0 0;
+}
+.sc-when {
+  font: 12px/1 "Special Elite", "Courier New", monospace;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.sc-title {
+  font-family: var(--serif);
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+}
+.sc-title em {
+  display: block;
+  margin-top: 4px;
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--ink-dim);
+}
+.sc-blurb {
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.35;
+  color: var(--ink-dim);
+}
+.sc-foot {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(232, 184, 96, 0.18);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.sc-open { color: var(--gold); transition: transform 0.3s; }
+.story-card:hover .sc-open { transform: translateX(4px); }
+.ss-status {
+  min-height: 18px;
+  margin-top: 14px;
+  font: 13px/1.4 "Special Elite", "Courier New", monospace;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+#home {
+  position: fixed;
+  top: 26px;
+  right: 84px;
+  padding: 7px 14px;
+  font: 12px/1 var(--sans);
+  color: var(--ink-dim);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 40px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s, color 0.2s, border-color 0.2s;
+  z-index: 20;
+}
+body.started #home { opacity: 1; pointer-events: auto; }
+#home:hover { color: var(--gold); border-color: var(--gold); }
+@media (prefers-reduced-motion: reduce) {
+  .story-card { transition: none; opacity: 1; transform: none; }
+}
+body.inspecting #crosshair, body.inspecting #fp-hint { opacity: 0 !important; }
+/* while reading the 3D letter: nothing on top of it */
+body.reading-letter #subtitle, body.reading-letter #title-card, body.reading-letter #rail { opacity: 0 !important; transition: opacity 0.6s; }
+
+/* ---------- the candle cursor ---------- */
+#candle-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+  filter: drop-shadow(0 0 calc(6px + 14px * var(--lit, 0)) rgba(255, 170, 70, calc(0.35 + 0.5 * var(--lit, 0))));
+}
+/* the candle cursor is switched off: the normal mouse pointer is used (people still light up on hover) */
+#candle-cursor { display: none; }
+#candle-cursor .cc-flame {
+  transform-origin: 20px 24px;
+  animation: cc-flicker 0.18s infinite alternate ease-in-out;
+}
+#candle-cursor .cc-halo {
+  transform-origin: 20px 14px;
+  transform: scale(calc(0.7 + 0.7 * var(--lit, 0)));
+  opacity: calc(0.45 + 0.55 * var(--lit, 0));
+  transition: transform 0.2s;
+}
+#candle-cursor.lit .cc-flame { animation-duration: 0.11s; }
+@keyframes cc-flicker {
+  from { transform: scale(0.94, 0.9) skewX(-3deg); }
+  to { transform: scale(1.04, 1.08) skewX(3deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #candle-cursor .cc-flame { animation: none; }
+}
+
+/* ---------- the task line (first person puzzles) ---------- */
+#fp-task {
+  position: fixed;
+  top: 22px;
+  left: 50%;
+  z-index: 31;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transform: translate(-50%, -10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s, transform 0.5s;
+  text-align: center;
+}
+body.first-person #fp-task.visible { opacity: 1; transform: translate(-50%, 0); }
+body.inspecting #fp-task { opacity: 0 !important; }
+.ft-label {
+  font: 11px/1 "Special Elite", "Courier New", monospace;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.ft-text {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--ink);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+}
+.ft-note {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 17px;
+  color: #f0c890;
+  opacity: 0;
+  transition: opacity 0.4s;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+}
+.ft-note.show { opacity: 1; }
+body.first-person #title-card { opacity: 0.25; }
+
+/* ---------- the microscope view ---------- */
+#microscope {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: radial-gradient(circle at center, rgba(10, 6, 4, 0.75), #000 70%);
+  animation: ms-in 0.6s ease-out;
+  user-select: none;
+}
+#microscope.closing { opacity: 0; transition: opacity 0.6s; }
+@keyframes ms-in { from { opacity: 0; } }
+.ms-lens {
+  position: relative;
+  width: min(62vh, 80vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 0 10px #0a0806, 0 0 80px rgba(255, 200, 220, 0.15);
+}
+.ms-lens canvas { width: 100%; height: 100%; display: block; transform: scale(1.08); }
+.ms-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 70px 30px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+}
+.ms-help { font: 14px/1.4 var(--sans); color: var(--ink-dim); }
+.ms-help b { color: var(--gold); font-weight: 600; }
+.ms-meter { width: 220px; height: 3px; background: rgba(232, 184, 96, 0.2); border-radius: 3px; overflow: hidden; }
+.ms-meter span { display: block; height: 100%; width: 0; background: var(--gold); transition: width 0.15s; }
+#microscope.sharp .ms-lens { box-shadow: 0 0 0 10px #0a0806, 0 0 90px rgba(255, 220, 160, 0.35); }
+#microscope.found .ms-help::after { content: " — sharp. Neurons, and the small dark glial cells around them."; color: var(--ink); }
+
+/* while playing, the page does not scroll (the scrollbar keeps its place: no jump) */
+html { scrollbar-gutter: stable; }
+html.no-scroll, html.no-scroll body { overflow: hidden; }

@@ -59,6 +59,10 @@ export function createCandle({ height = 0.18, radius = 0.03, intensity = 2.5, di
   candle.userData.update = (time) => {
     const f = flicker(time, seed);
     light.intensity = candle.userData.baseIntensity * f;
+    // the flame sways, so the light (and every shadow it casts) dances a little on the walls
+    light.position.x = 0.012 * Math.sin(time * 3.3 + seed) + 0.006 * Math.sin(time * 8.9 + seed * 2.1);
+    light.position.z = 0.012 * Math.cos(time * 2.7 + seed * 1.3);
+    light.position.y = height + 0.08 + 0.01 * (f - 0.85);
     flameMaterial.uniforms.uTime.value = time;
     flameMaterial.uniforms.uIntensity.value = f;
     flame.scale.y = flameSize * (0.9 + 0.15 * f); // the flame grows and shrinks a little

@@ -8,10 +8,16 @@
 import * as THREE from "three";
 import { buzz } from "./flicker.js";
 import { getModel } from "../assets/loader.js";
+import { createLightShaft } from "./shaft.js";
+
+// softer: the hard lamps and spots are 40 % weaker, the soft fill light 60 % stronger
+// (less "spotlight on a black stage", more "a room you can see into")
+const HARD = 0.6;
+const FILL = 1.6;
 
 /** soft fill light: warm from above, dark brown from below */
 export function createAmbient(intensity = 0.25, sky = "#c8a888", ground = "#1a120c") {
-  return new THREE.HemisphereLight(sky, ground, intensity);
+  return new THREE.HemisphereLight(sky, ground, intensity * FILL);
 }
 
 /**
@@ -21,11 +27,16 @@ export function createAmbient(intensity = 0.25, sky = "#c8a888", ground = "#1a12
 export function createHangingLamp({ intensity = 30, color = "#ffd9a0", angle = 0.75, shadows = true, flickers = true, swing = 0.06 } = {}) {
   const lamp = getModel("hanging-lamp"); // the bulb is 0.9 m under the ceiling
 
+  intensity *= HARD;
   const spot = new THREE.SpotLight(color, intensity, 12, angle, 0.5, 2);
   spot.position.y = -0.85;
   spot.target.position.set(0, -10, 0); // the target is what the spot points at
   lamp.add(spot, spot.target);
   if (shadows) setupShadow(spot);
+  // the visible beam under the shade (it swings with the lamp, since it is its child)
+  const shaft = createLightShaft({ angle: angle * 0.8, length: 2.6, color, opacity: 0.16 });
+  shaft.position.y = -0.85;
+  lamp.add(shaft);
 
   lamp.userData.light = spot;
   lamp.userData.baseIntensity = intensity;
@@ -35,6 +46,7 @@ export function createHangingLamp({ intensity = 30, color = "#ffd9a0", angle = 0
   lamp.userData.swing = swing; // amplitude in radians, a set can change it
   lamp.userData.update = (time) => {
     if (flickers) spot.intensity = lamp.userData.baseIntensity * buzz(time, seed);
+    shaft.userData.tick(time, spot.intensity / Math.max(1e-3, lamp.userData.baseIntensity));
     if (!lamp.userData.manual) {
       lamp.rotation.z = Math.sin(time * 1.1 + seed) * lamp.userData.swing;
       lamp.rotation.x = Math.sin(time * 0.8 + seed * 2) * lamp.userData.swing * 0.4;
@@ -44,7 +56,8 @@ export function createHangingLamp({ intensity = 30, color = "#ffd9a0", angle = 0
 }
 
 /** a SpotLight going from `from` to `to` (museum spots, desk lamps, theatre light) */
-export function createSpot({ from, to, intensity = 20, color = "#ffe0b0", angle = 0.4, penumbra = 0.6, shadows = true }) {
+export function createSpot({ from, to, intensity = 20, color = "#ffe0b0", angle = 0.4, penumbra = 0.6, shadows = true, beam = true }) {
+  intensity *= HARD;
   const spot = new THREE.SpotLight(color, intensity, 15, angle, penumbra, 2);
   spot.position.set(...from);
   spot.target.position.set(...to);
@@ -52,6 +65,16 @@ export function createSpot({ from, to, intensity = 20, color = "#ffe0b0", angle 
   const group = new THREE.Group();
   group.add(spot, spot.target);
   group.userData.light = spot;
+  if (beam) {
+    // a visible beam from the spot to its target
+    const a = new THREE.Vector3(...from), b = new THREE.Vector3(...to);
+    const shaft = createLightShaft({ angle: angle * 0.8, length: a.distanceTo(b), color, opacity: 0.16 });
+    shaft.position.copy(a);
+    // the cone points down -Y: rotate -Y onto the from→to direction
+    shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), b.sub(a).normalize());
+    group.add(shaft);
+    group.userData.update = (time) => shaft.userData.tick(time, spot.intensity / Math.max(1e-3, intensity));
+  }
   return group;
 }
 

@@ -1,5 +1,9 @@
-// The title screen. While the assets load, the button shows the progress.
-// Then it waits for a click (needed anyway: browsers block sound until the user clicks).
+// The title screen (as in the first version): the title, one line of story, and one button.
+// While the assets load, the button shows the progress; then it waits for the click
+// (needed anyway: browsers block sound until the user clicks).
+//
+// The engine can hold several stories (stories/index.js): the screen opens the one in the address
+// (?story=id), or the first one.
 
 export function createStartScreen() {
   const screen = document.getElementById("start-screen");
@@ -12,19 +16,25 @@ export function createStartScreen() {
     setProgress(progress) {
       button.textContent = `Loading… ${Math.round(progress * 100)}%`;
     },
-    ready() {
+
+    /** waits for "Begin the story", resolves with the story to play */
+    pick(stories, preselect) {
+      const story = stories.find((s) => s.id === preselect) ?? stories[0];
       button.disabled = false;
       button.textContent = "Begin the story";
-    },
-    /** returns a Promise that resolves when the user clicks "Begin" */
-    waitForClick() {
       return new Promise((resolve) => {
-        button.addEventListener("click", () => {
-          screen.classList.add("hidden");
-          document.body.classList.remove("locked");
-          resolve();
-        });
+        button.addEventListener("click", () => resolve(story), { once: true });
       });
+    },
+
+    preparing() {
+      button.disabled = true;
+      button.textContent = "Preparing the rooms…";
+    },
+
+    hide() {
+      screen.classList.add("hidden");
+      document.body.classList.remove("locked");
     },
   };
 }

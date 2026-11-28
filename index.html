@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Candlelit — Einstein's Brain</title>
+    <title>Candlelit — The Stolen Brain of Albert Einstein</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,7 +20,6 @@
 
     <!-- overlays drawn on top of the canvas (HTML + CSS, not WebGL) -->
     <div id="vignette"></div>
-    <div id="fade"></div>
 
     <div id="title-card">
       <div class="tc-number"></div>
@@ -67,16 +66,19 @@
 
     <div id="progress"><div id="progress-bar"></div></div>
     <button id="mute" title="Sound on / off">🔊</button>
-    <div id="hint">Scroll to continue · hover over people &amp; objects</div>
+    <div id="hint">Scroll to continue</div>
 
     <div id="start-screen">
       <div class="ss-small">A scroll story in WebGL</div>
       <h1>The Stolen Brain<br /><span>of Albert Einstein</span></h1>
       <p>Princeton, 1955. The greatest mind of the century dies.<br />His brain does not go with him.</p>
-      <button id="start-button">Begin the story</button>
+      <button id="start-button" disabled>Loading…</button>
       <div class="ss-tip">Best with sound · scroll to move through time</div>
     </div>
 
     <script type="module" src="/src/main.js"></script>
+      <!-- first person: the aiming dot and the controls reminder -->
+    <div id="crosshair" aria-hidden="true"></div>
+    <div id="fp-hint"><span><b>W A S D</b> / <b>Z Q S D</b> walk</span><span><b>Shift</b> faster</span><span><b>Mouse</b> look</span><span><b>Click</b> the glowing clue</span></div>
   </body>
 </html>
